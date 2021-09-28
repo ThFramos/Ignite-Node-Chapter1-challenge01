@@ -14,7 +14,6 @@ function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
 
   const user = users.find(user => user.username === username);
-
   if (!user) {
     return response.status(404).json({ error: "User not found!" });
   }
@@ -28,9 +27,9 @@ function checksExistsUserAccount(request, response, next) {
 app.post('/users', (request, response) => {
   const { name, username } = request.body;
 
-  if (!name || !username) return response.status(400).send({ error: "name our username invalid !" })
+  //if (!name || !username) return response.status(400).send({ error: "name our username invalid !" })
 
-  const userAlreadyExists = users.some(user => user.name === name || user.username === username);
+  const userAlreadyExists = users.some(user => /* user.name === name || */ user.username === username);
   if (userAlreadyExists) return response.status(400).json({ error: `User already exists` });
 
 
@@ -50,7 +49,7 @@ app.post('/users', (request, response) => {
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
 
-  return response.status(200).json(user.todos);
+  return response.status(201).json(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
@@ -58,7 +57,7 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
   const { title, deadline } = request.body;
 
 
-  //if (!title || !deadline) return response.status(404).json({ error: "title our deadline not found !" })
+  if (!title || !deadline) return response.status(404).json({ error: "title our deadline not found !" })
   const newTodo = {
     id: uuidv4(),
     title,
@@ -81,7 +80,7 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 
   const todoExists = todos.find(todo => todo.id === id);
   if (!todoExists) {
-    return response.status(400).json({ error: "Todo not found!" });
+    return response.status(404).json({ error: "Todo not found!" });
   }
   todoExists.title = title;
   todoExists.deadline = deadline;
@@ -99,7 +98,7 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
 
   const todoExists = todos.find(todo => todo.id === id);
   if (!todoExists) {
-    return response.status(400).json({ error: "Todo not found!" });
+    return response.status(404).json({ error: "Todo not found!" });
   }
 
   todoExists.done = true;
@@ -116,12 +115,12 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
 
   const todoExists = todos.findIndex(todo => todo.id === id);
   if (todoExists < 0) {
-    return response.status(400).json({ error: "Todo not found!" });
+    return response.status(404).json({ error: "Todo not found!" });
   }
 
   todos.splice(todoExists, 1);
 
-  return response.status(201).send();
+  return response.status(204).send();
 });
 
 module.exports = app;
